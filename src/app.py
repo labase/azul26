@@ -1,53 +1,45 @@
-from bottle import Bottle, run
-BODY = '''
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Azul</title>
-  <link  rel="stylesheet"  href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.15.0/brython.min.js" integrity="sha512-G0CChqkpHKCjVgLM0se6TLfQ0fqmoFqvr5XCONxzF2GoiQmStnd76lKmMLGo/g32mzP3qmIPalp4z+qICfAPYw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.15.0/brython_stdlib.min.js" integrity="sha512-vUqnWPo3+2xMHld57vH6JZjWcUEAofzKGs4egBxZdPMC+IPyRrwe3usgCdmV3jP1xaEENJnou/M0EnP5npDuig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
-  <style>
-    .bottle-svg { width: 120px; height: auto; }
-        /* Único CSS customizado: garantir que os ladrilhos sejam quadrados perfeitos */
-        .tile-slot {
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
-        }
-        /* Fundo da mesa para contraste */
-        body {
-            background-color: #d8c3a5; 
-            padding: 2rem;
-        }
+import argparse
+import os
+import tornado.ioloop
+import tornado.web
 
-  </style>
-</head>
-<body>
-<H1>"Jogo do Azul"</H1>
- <div class="container" style="max-width: 850px;">
-        
-        <!-- Painel Geral (Moldura do Tabuleiro) -->
-        <div class="box has-background-white-ter p-5" style="border: 4px solid #2c3e50;"></div>
-    </div>
-</body>
-</html>'''
-class MyServer(object):
-    def __init__(self):
-        self.app = Bottle()
-        self.init_routes()
+class HomeHandler(tornado.web.RequestHandler):
+    HOME_PAGE = ""
+    def get(self):
+        self.set_header("Content-Type", "text/html; charset=utf-8")
+        with open('index.html') as f:
+            self.HOME_PAGE =f.read()
+            self.write(self.HOME_PAGE)
 
-    def init_routes(self):
-        """Initialize all routes"""
-        @self.app.route('/')
-        def hello():
-            return BODY
+        # self.write(HOME_PAGE)
 
-    def run(self):
-        run(self.app, host='0.0.0.0', port=8080)
-# Example usage
+    def head(self):
+        self.set_header("Content-Type", "text/html; charset=utf-8")
+        self.set_header("Content-Length", len(self.HOME_PAGE.encode("utf-8")))
+
+
+def make_app(rooter: str, default_file: str | None = None):
+    return tornado.web.Application([
+        (r"/", HomeHandler),                              # home page (exact match)
+        (r"/(.*)", tornado.web.StaticFileHandler, {       # everything else = static
+            "path": rooter,
+            "default_filename": default_file or "",
+        }),
+    ])
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Simple Tornado static file server")
+    parser.add_argument("--port", type=int, default=8585)
+    parser.add_argument("--root", default=os.path.abspath("."))
+    parser.add_argument("--index", default="index.html")
+    args = parser.parse_args()
+
+    make_app(args.root, args.index).listen(args.port)
+    print(f"Home:    http://localhost:{args.port}/")
+    print(f"Statics: {args.root} served at http://localhost:{args.port}/<file>")
+    tornado.ioloop.IOLoop.current().start()
+
+
 if __name__ == "__main__":
-    server = MyServer()
-    server.run()
+    main()
