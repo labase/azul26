@@ -1,3 +1,22 @@
+#!/usr/bin/env python
+""" Web server runner.
+
+Classes neste módulo:
+    - :py:class:`MyServer` handle all routes from web.
+
+.. codeauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
+
+Changelog
+---------
+.. versionadded::    26.11
+   |br| Initial server implementation (04).
+   |br| Working version with Bottle, Bulma & Brython (11).
+
+|   **Open Source Notification:** This file is part of open source program **Azul**
+|   **Copyright © 2026  Carlo Oliveira** <carlo@nce.ufrj.br>,
+|   **SPDX-License-Identifier:** `GNU General Public License v3.0 or later <https://is.gd/3Udt>`_.
+|   `Labase <https://labase.github.io/>`_ - `NCE <https://portal.nce.ufrj.br>`_ - `UFRJ <https://ufrj.br/>`_.
+"""
 from bottle import Bottle, run, static_file
 BODY = '''
 <!DOCTYPE html>
